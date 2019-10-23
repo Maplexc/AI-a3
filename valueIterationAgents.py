@@ -41,50 +41,47 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         "*** YOUR CODE HERE ***"
 
+        self.Q_values = util.Counter()
+        # working version
         for i in range(iterations):
             V = self.values.copy()
             for state in mdp.getStates():
                 action_values = util.Counter()
+                # print("action_values (init): ", action_values)
                 for action in mdp.getPossibleActions(state):
-                    print("init")
+                    action_values[action] = mdp.getReward(state, action, state)
                     for next_state, prob in mdp.getTransitionStatesAndProbs(state, action):
-                        action_values[action] += (mdp.getReward(
-                            state, action, next_state) + prob * discount * V[next_state])
-                self.values[state] = action_values[action_values.argMax()]
+                        action_values[action] += prob*discount*V[next_state]
+                        # print(action_values)
+                        # print("reward (init): ", mdp.getReward(
+                        # state, action, transition_state), state, action, transition_state)
+                        # print(self.values[state])
+                        # print("action_values (init): ", action_values)
+                    self.Q_values[state] = action_values
+                    self.values[state] = action_values[action_values.argMax()]
+            # print("values (init): ", self.values)
 
         # working version
         # for i in range(iterations):
         #     V = self.values.copy()
-        #     print("V: ", V)
+        #     # print("V: ", V)
         #     for state in mdp.getStates():
         #         action_values = util.Counter()
-        #         print("action_values (init): ", action_values)
+        #         # print("action_values (init): ", action_values)
         #         for action in mdp.getPossibleActions(state):
-        #             for transition_state, prob in mdp.getTransitionStatesAndProbs(state, action):
-        #                 print("V (init): ", V)
-        #                 action_values[action] += (mdp.getReward(
-        #                     state, action, transition_state) + prob * discount * V[transition_state])
-        #                 print("reward (init): ", mdp.getReward(
-        #                     state, action, transition_state), state, action, transition_state)
-        #                 print(self.values[state])
-        #                 print("action_values (init): ", action_values)
-        #         print("values (init): ", self.values)
-        #         self.values[state] = action_values[action_values.argMax()]
-
-        # self.states = mdp.getStates()
-        # print("all states", self.states)
-        # for state in self.states:
-        #     print("current state", state)
-        #     print("terminal or not? ", mdp.isTerminal(state))
-        #     print(len(mdp.getPossibleActions(state)))
-        #     for action in mdp.getPossibleActions(state):
-        #         print("action", action)
-        #         print("transition prob",
-        #               mdp.getTransitionStatesAndProbs(state, action))
-        #         for next_state_with_prob in mdp.getTransitionStatesAndProbs(state, action):
-        #             next_state = next_state_with_prob[0]
-        #             print("reward", mdp.getReward(state, action, next_state))
-        # self.qValues = dict()
+        #             action_values[action] = mdp.getReward(state, action, state)
+        #             for next_state, prob in mdp.getTransitionStatesAndProbs(state, action):
+        #                 # print("!!!!!!!!!!!!!!!!!!!!!!!!reward: ", mdp.getReward(state, action, next_state))
+        #                 # print("V (init): ", V)
+        #                 action_values[action] += prob * \
+        #                     discount*V[next_state]
+        #                 print(action_values)
+        #                 # print("reward (init): ", mdp.getReward(
+        #                 # state, action, transition_state), state, action, transition_state)
+        #                 # print(self.values[state])
+        #                 # print("action_values (init): ", action_values)
+        #             self.values[state] = action_values[action_values.argMax()]
+        #     print("values (init): ", self.values)
 
     def getValue(self, state):
         """
@@ -101,12 +98,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           to derive it on the fly.
         """
         "*** YOUR CODE HERE ***"
+        return self.Q_values[state][action]
+
         # util.raiseNotDefined()
-        Q_value = self.values[state]
-        for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
-            Q_value += self.discount * prob * self.values[next_state]
-            print(Q_value)
-        return Q_value
+
+        # Q_value = self.values[state]
+        # print("here")
+        # for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+        #     Q_value += self.discount * prob * self.values[next_state]
+
+        # return Q_value
 
     def getPolicy(self, state):
         """
@@ -118,21 +119,39 @@ class ValueIterationAgent(ValueEstimationAgent):
         """
         "*** YOUR CODE HERE ***"
         # util.raiseNotDefined()
+
         # the case at the terminal state, return None
         if self.mdp.isTerminal(state):
             return None
         # if the state only have one action, return that action as policy
-        actions = self.mdp.getPossibleActions(state)
-        if len(actions) == 1:
-            return actions[0]
         else:
-            action_values = util.Counter()
-            for action in actions:
-                print(action)
-                for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
-                    action_values[action] += (self.mdp.getReward(
-                        state, action, next_state) + prob * self.discount * self.values[next_state])
-            return action_values.argMax()
+            return self.Q_values[state].argMax()
+
+        # the case at the terminal state, return None
+        # if self.mdp.isTerminal(state):
+        #     return None
+        # # if the state only have one action, return that action as policy
+        # actions = self.mdp.getPossibleActions(state)
+        # if len(actions) == 1:
+        #     return actions[0]
+        # else:
+        #     action_values = util.Counter()
+        #     # for action in actions:
+        #     #     action_values[action] += self.getQValue(state, action)
+        #     #     # print(action_values)
+        #     #     # print(action)
+        #     #     # for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+        #     #     #     action_values[action] += (self.mdp.getReward(
+        #     #     #         state, action, next_state) + prob * self.discount * self.values[next_state])
+
+        #     for action in actions:
+        #         # print(action)
+        #         action_values[action] = self.mdp.getReward(
+        #             state, action, state)
+        #         for next_state, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+        #             action_values[action] += prob * \
+        #                 self.discount * self.values[next_state]
+        #     return action_values.argMax()
 
     def getAction(self, state):
         "Returns the policy at the state (no exploration)."
