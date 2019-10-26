@@ -144,10 +144,6 @@ class QLearningAgent(ReinforcementAgent):
 
     target = reward + self.gamma * self.getQValue(nextState, actionMax)
 
-    qApprox = self.getQValue(state, action)
-
-    loss = abs(qApprox - target)
-
     self.q[(state, action)] = (1 - self.alpha) * self.q[(state, action)] + self.alpha * target
 
     # util.raiseNotDefined()
