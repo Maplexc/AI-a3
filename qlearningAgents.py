@@ -40,14 +40,7 @@ class QLearningAgent(ReinforcementAgent):
 
     "*** YOUR CODE HERE ***"
     self.q = util.Counter()
-    # q[(state, action)] = value
-    # t = ReinforcementAgent.startEpisode(self)
-
-    # print(t.lastState)
-    # print(self.actionFn(self.lastState))
-    # print("test ")
-    # for action in args[0]
-
+  
 
 
   def getQValue(self, state, action):
@@ -78,9 +71,13 @@ class QLearningAgent(ReinforcementAgent):
     qValues = util.Counter() 
     
     legalActions = self.getLegalActions(state) 
+    print(legalActions)
+    if (legalActions == 'exit'):
+      return 0.0
 
     for legalAction in legalActions:
-      qValues[legalAction] = self.getQValue((state, legalAction))
+      
+      qValues[(state , legalAction)] = self.getQValue(state, legalAction)
 
     return qValues[qValues.argMax()]
 
@@ -120,13 +117,11 @@ class QLearningAgent(ReinforcementAgent):
     action = None
     "*** YOUR CODE HERE ***"
 
-    # if legalActions == None:
-    #   return action
-    # else:
-    #   prob = util.flipCoin(self.epsilon)
-
-    util.raiseNotDefined()
-    
+    if flipCoin(self.epsilon): # less than epislon , random action
+      action = random.choice(legalActions)
+    else:
+      action = self.getPolicy(state)
+   
     return action
   
   def update(self, state, action, nextState, reward):
@@ -194,13 +189,24 @@ class ApproximateQAgent(PacmanQAgent):
 
     # You might want to initialize weights here.
     "*** YOUR CODE HERE ***"
-    
+    self.w = util.Counter()
+    self.q = util.Counter()
+
   def getQValue(self, state, action):
     """
       Should return Q(state,action) = w * featureVector
       where * is the dotProduct operator
     """
     "*** YOUR CODE HERE ***"
+
+    qValue = 0
+    features = self.featExtractor.getFeatures(state,action)
+    for feature in features:
+
+      qValue += features[feature] * self.w[feature]
+
+    return qValue 
+
     util.raiseNotDefined()
     
   def update(self, state, action, nextState, reward):
@@ -208,7 +214,15 @@ class ApproximateQAgent(PacmanQAgent):
        Should update your weights based on transition  
     """ 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    features = self.featExtractor.getFeatures(state, action)
+
+    correction = reward + self.gamma * self.getValue(nextState) - self.getQValue(state,action)
+    features = self.featExtractor.getFeatures(state, action)
+    for feature in features :
+      self.w[feature] += self.alpha * correction * features[feature]
+
+    # util.raiseNotDefined()
     
   def final(self, state):
     "Called at the end of each game."
