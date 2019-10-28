@@ -41,25 +41,26 @@ class ValueIterationAgent(ValueEstimationAgent):
 
         "*** YOUR CODE HERE ***"
 
+        # Q_values store qValue for each state and action pair
         self.Q_values = util.Counter()
-        # working version
+
         for i in range(iterations):
-            V = self.values.copy()
+
+            V = self.values.copy()  # "batch" version of values
+
             for state in mdp.getStates():
+                # action_values store qValue for a state with possible actions
                 action_values = util.Counter()
-                # print("action_values (init): ", action_values)
                 for action in mdp.getPossibleActions(state):
+                    # immediate reward for a state
                     action_values[action] = mdp.getReward(state, action, state)
+
+                    # expected total future reward
                     for next_state, prob in mdp.getTransitionStatesAndProbs(state, action):
                         action_values[action] += prob*discount*V[next_state]
-                        # print(action_values)
-                        # print("reward (init): ", mdp.getReward(
-                        # state, action, transition_state), state, action, transition_state)
-                        # print(self.values[state])
-                        # print("action_values (init): ", action_values)
+
                     self.Q_values[state] = action_values
                     self.values[state] = action_values[action_values.argMax()]
-            # print("values (init): ", self.values)
 
         # working version
         # for i in range(iterations):
